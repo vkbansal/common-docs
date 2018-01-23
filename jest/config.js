@@ -1,5 +1,5 @@
 module.exports = {
-    setupFiles: ['@vkbansal/docs/jest/jsdom.setup.js', '@vkbansal/docs/jest/enzyme.setup.js'],
+    setupFiles: ['@vkbansal/scripts/jest/jsdom.setup.js', '@vkbansal/scripts/jest/enzyme.setup.js'],
     testMatch: ['**/?(*.)(spec|test).ts?(x)'],
     moduleFileExtensions: ['ts', 'tsx', 'js'],
     roots: ['<rootDir>/src/__tests__/'],
