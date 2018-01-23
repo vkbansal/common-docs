@@ -6,6 +6,8 @@ const MinifyPlugin = require('babel-minify-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 
 function docsConfig({ context, PROD, pathname, pageTitle }) {
+    const DEV = !PROD;
+
     const config = {
         context,
         entry: ['./index.tsx'],
@@ -55,7 +57,7 @@ function docsConfig({ context, PROD, pathname, pageTitle }) {
         }
     };
 
-    !PROD && (config.devtool = 'source-map');
+    DEV && (config.devtool = 'source-map');
 
     PROD &&
         config.plugins.push(
