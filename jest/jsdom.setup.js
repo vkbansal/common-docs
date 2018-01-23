@@ -10,5 +10,3 @@ global.window.resizeTo = (width, height) => {
     global.window.dispatchEvent(new Event('resize'));
 };
 global.window.requestAnimationFrame = jest.fn();
-
-console.log('JSDOM setup complete');
