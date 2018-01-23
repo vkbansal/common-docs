@@ -54,7 +54,7 @@ function docsConfig({ context, PROD, pathname, pageTitle }) {
             })
         ],
         resolve: {
-            extensions: ['.ts', '.tsx', '.js']
+            extensions: ['.js', '.ts', '.tsx']
         }
     };
 

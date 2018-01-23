@@ -20,8 +20,8 @@ export type StyleOverrides<T = any> = Record<
 
 function getStyleOverrides<T>(name: string) {
     return (props: T & ExtraGlamorousProps, ...rest: any[]) => {
-        const overrides: CSSProperties | StyleFunction<CSSProperties, T> = (props.theme as any)
-            .commonDocs[name];
+        const overrides: CSSProperties | StyleFunction<CSSProperties, T> = ((props.theme as any)
+            .commonDocs || {})[name];
 
         if (typeof overrides === 'function') {
             return overrides(props, ...rest);

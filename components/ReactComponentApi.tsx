@@ -18,7 +18,7 @@ export class ReactComponentApi extends React.Component<ReactComponentApiProps> {
         return false;
     }
 
-    renderProps(key: string, i: number) {
+    renderProps = (key: string, i: number) => {
         const prop = this.props.api.props[key];
         const { description } = prop;
         const [desc, example] = description.split('@example');
@@ -33,7 +33,7 @@ export class ReactComponentApi extends React.Component<ReactComponentApiProps> {
                 {example && <Illuminate lang={this.props.lang}>{example.trim()}</Illuminate>}
             </div>
         );
-    }
+    };
 
     render() {
         return Object.keys(this.props.api.props).map(this.renderProps);
