@@ -1,10 +1,13 @@
-import { NavLink } from 'react-router-dom';
+import * as React from 'react';
+import { NavLink, NavLinkProps } from 'react-router-dom';
 import glamorous, {
     GlamorousComponent,
     CSSProperties,
     StyleFunction,
     ExtraGlamorousProps
 } from 'glamorous';
+
+export { React, GlamorousComponent };
 
 const SIDEBAR_WIDTH = 300;
 const CONTAINER_WIDTH = 800;
@@ -107,7 +110,7 @@ export const NavItem = glamorous.li(
 
 NavItem.displayName = 'NavItem';
 
-export const Link = glamorous(NavLink)(
+export const Link = glamorous(NavLink)<NavLinkProps>(
     'pure-menu-link',
     {
         position: 'relative',
