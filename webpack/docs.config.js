@@ -35,7 +35,7 @@ function docsConfig({ context, PROD, pathname, pageTitle }) {
                     include: [
                         path.resolve(context, '../src'),
                         path.resolve(context),
-                        path.resolve(context, '../node_modules/@vkbansal/scripts')
+                        path.resolve(__dirname, '../')
                     ]
                 },
                 {
@@ -46,10 +46,11 @@ function docsConfig({ context, PROD, pathname, pageTitle }) {
         },
         plugins: [
             new HtmlWebpackPlugin({
-                template: path.resolve(context, '../node_modules/@vkbansal/scripts/template.html'),
+                template: path.resolve(__dirname, '../template.html'),
                 inject: true,
                 title: pathname,
-                filename: 'index.html'
+                filename: 'index.html',
+                PROD
             })
         ],
         resolve: {
@@ -69,7 +70,7 @@ function docsConfig({ context, PROD, pathname, pageTitle }) {
             new MinifyPlugin(),
             new CompressionPlugin({
                 asset: '[path][query]',
-                test: /\.js$|\.css/
+                test: /\.(js|css)$/
             })
         );
 
