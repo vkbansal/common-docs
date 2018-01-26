@@ -37,27 +37,6 @@ function isNodeExported(node: ts.Node): boolean {
     );
 }
 
-export function parse(
-    filePath: string,
-    compilerOptions: ts.CompilerOptions = defaultConfig
-): ComponentDoc[] {
-    const program = ts.createProgram([filePath], compilerOptions);
-    const parser = new Parser(program);
-    const sourceFile = program.getSourceFile(filePath);
-
-    let output: ComponentDoc[] = [];
-
-    ts.forEachChild(sourceFile, (node) => {
-        const doc = parser.visit(node);
-
-        if (doc) output.push(doc);
-    });
-
-    output = output.filter((c) => c);
-
-    return output;
-}
-
 export class Parser {
     private checker: ts.TypeChecker;
 
@@ -99,8 +78,9 @@ export class Parser {
     };
 
     serializeFunctionDeclaration = (symbol: ts.Symbol): ComponentDoc | null => {
-        // tslint:disable-next-line:no-non-null-assertion
-        const type = this.checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!);
+        if (!symbol.valueDeclaration) return null;
+
+        const type = this.checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration);
         const callSignatures = type.getCallSignatures();
 
         if (callSignatures.length === 0) return null;
@@ -130,8 +110,9 @@ export class Parser {
     };
 
     serializeClassDeclaration = (symbol: ts.Symbol): ComponentDoc | null => {
-        // tslint:disable-next-line:no-non-null-assertion
-        const type = this.checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration!);
+        if (!symbol.valueDeclaration) return null;
+
+        const type = this.checker.getTypeOfSymbolAtLocation(symbol, symbol.valueDeclaration);
         const constructSignatures = type.getConstructSignatures();
 
         if (constructSignatures.length === 0) return null;
@@ -158,7 +139,7 @@ export class Parser {
         };
     };
 
-    getPropsInfo(propsObj: ts.Symbol, defaultProps: Record<string, string> = {}): PropItem[] {
+    getPropsInfo(propsObj: ts.Symbol /*, defaultProps: Record<string, string> = {}*/): PropItem[] {
         if (!propsObj.valueDeclaration) {
             return [];
         }
@@ -173,13 +154,12 @@ export class Parser {
         const result: PropItem[] = [];
 
         propertiesOfProps.forEach((prop) => {
-            const propName = prop.getName();
+            if (!propsObj.valueDeclaration) return;
 
             // Find type of prop by looking in context of the props object itself.
             const propType = this.checker.getTypeOfSymbolAtLocation(
                 prop,
-                // tslint:disable-next-line:no-non-null-assertion
-                propsObj.valueDeclaration!
+                propsObj.valueDeclaration
             );
 
             const propTypeString = this.checker.typeToString(propType);
@@ -190,9 +170,10 @@ export class Parser {
 
             let defaultValue = null;
 
-            if (defaultProps[propName] !== undefined) {
-                defaultValue = defaultProps[propName];
-            } else if (tags.default) {
+            // if (defaultProps[propName] !== undefined) {
+            //     defaultValue = defaultProps[propName];
+            // } else
+            if (tags.default) {
                 defaultValue = tags.default;
                 delete tags.default;
             }
@@ -230,4 +211,25 @@ export class Parser {
             .getJsDocTags()
             .reduce((p, c: ts.JSDocTagInfo) => ({ ...p, [c.name]: c.text || '' }), {});
     };
+}
+
+export function parse(
+    filePath: string,
+    compilerOptions: ts.CompilerOptions = defaultConfig
+): ComponentDoc[] {
+    const program = ts.createProgram([filePath], compilerOptions);
+    const parser = new Parser(program);
+    const sourceFile = program.getSourceFile(filePath);
+
+    let output: ComponentDoc[] = [];
+
+    ts.forEachChild(sourceFile, (node) => {
+        const doc = parser.visit(node);
+
+        if (doc) output.push(doc);
+    });
+
+    output = output.filter((c) => c);
+
+    return output;
 }

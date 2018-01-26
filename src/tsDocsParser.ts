@@ -32,27 +32,6 @@ function isNodeExported(node: ts.Node): boolean {
     );
 }
 
-export function parse(
-    filePath: string,
-    compilerOptions: ts.CompilerOptions = defaultConfig
-): NodeDoc[] {
-    const program = ts.createProgram([filePath], compilerOptions);
-    const parser = new Parser(program);
-    const sourceFile = program.getSourceFile(filePath);
-
-    let output: NodeDoc[] = [];
-
-    ts.forEachChild(sourceFile, (node) => {
-        const doc = parser.visit(node);
-
-        if (doc) output.push(doc);
-    });
-
-    output = output.filter((c) => c);
-
-    return output;
-}
-
 export class Parser {
     private checker: ts.TypeChecker;
 
@@ -101,7 +80,7 @@ export class Parser {
             ...this.serializeSymbol(symbol),
             tags: symbol
                 .getJsDocTags()
-                .reduce((p, c: ts.JSDocTagInfo) => ({ ...p, [c.name]: c.text || '' }), {}),
+                .reduce<Record<string, string>>((p, c) => ({ ...p, [c.name]: c.text || '' }), {}),
             signature: type.getCallSignatures().map(this.serializeSignature)
         };
     };
@@ -115,7 +94,7 @@ export class Parser {
             type: 'Class',
             tags: symbol
                 .getJsDocTags()
-                .reduce((p, c: ts.JSDocTagInfo) => ({ ...p, [c.name]: c.text || '' }), {}),
+                .reduce<Record<string, string>>((p, c) => ({ ...p, [c.name]: c.text || '' }), {}),
             constructors: type.getConstructSignatures().map(this.serializeSignature)
         };
     };
@@ -139,4 +118,25 @@ export class Parser {
             returnType: this.checker.typeToString(returnType)
         };
     };
+}
+
+export function parse(
+    filePath: string,
+    compilerOptions: ts.CompilerOptions = defaultConfig
+): NodeDoc[] {
+    const program = ts.createProgram([filePath], compilerOptions);
+    const parser = new Parser(program);
+    const sourceFile = program.getSourceFile(filePath);
+
+    let output: NodeDoc[] = [];
+
+    ts.forEachChild(sourceFile, (node) => {
+        const doc = parser.visit(node);
+
+        if (doc) output.push(doc);
+    });
+
+    output = output.filter((c) => c);
+
+    return output;
 }
