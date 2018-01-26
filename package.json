@@ -1,11 +1,12 @@
 {
   "name": "@vkbansal/scripts",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "\"common components for docs\"",
   "main": "index.js",
   "scripts": {
-    "test": "tsc --project tsconfig.json --noEmit && tslint --project tsconfig.json",
-    "prepublishOnly": "npm test"
+    "test": "tslint --project tsconfig.json src/**/*.{ts,tsx} components/**/*.{ts,tsx}",
+    "build": "rm -rf lib && tsc -p tsconfig.json --module commonjs --target ESNext --outDir lib",
+    "prepublishOnly": "npm test && npm build"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,8 @@
   },
   "homepage": "https://github.com/vkbansal/common-docs#readme",
   "optionalDependencies": {
+    "@types/lodash": "^4.14.95",
+    "@types/markdown-it": "0.0.4",
     "@types/react": "^16.0.34",
     "@types/react-dom": "^16.0.3",
     "@types/react-router-dom": "^4.2.3",
@@ -28,12 +31,15 @@
     "enzyme-to-json": "^3.3.0",
     "glamor": "^2.20.40",
     "glamorous": "^4.11.4",
+    "handlebars": "^4.0.11",
+    "handlebars-loader": "^1.6.0",
     "html-webpack-plugin": "^2.30.1",
     "illuminate-js": "^1.0.0-alpha.2",
     "jest-glamor-react": "^3.3.0",
     "jsdom": "^11.6.0",
+    "lodash": "^4.17.4",
+    "markdown-it": "^8.4.0",
     "react": "^16.2.0",
-    "react-docgen-typescript": "^1.2.3",
     "react-dom": "^16.2.0",
     "react-illuminate": "^2.0.0-alpha.1",
     "react-router-dom": "^4.2.2",

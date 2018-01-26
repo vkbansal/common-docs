@@ -41,12 +41,16 @@ function docsConfig({ context, PROD, pathname, pageTitle }) {
                 {
                     test: /\.css$/,
                     use: 'glamor-loader'
+                },
+                {
+                    test: /\.hbs$/,
+                    use: 'handlebars-loader'
                 }
             ]
         },
         plugins: [
             new HtmlWebpackPlugin({
-                template: path.resolve(__dirname, '../template.html'),
+                template: path.resolve(__dirname, '../template.hbs'),
                 inject: true,
                 title: pathname,
                 filename: 'index.html',
