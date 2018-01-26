@@ -1,6 +1,6 @@
 {
   "name": "@vkbansal/scripts",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "\"common components for docs\"",
   "main": "index.js",
   "scripts": {
@@ -12,7 +12,7 @@
     "type": "git",
     "url": "git+ssh://git@github.com/vkbansal/common-docs.git"
   },
-  "author": "",
+  "author": "Vivek Kumar Bansal",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/vkbansal/common-docs/issues"
