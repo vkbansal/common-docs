@@ -19,7 +19,7 @@ export interface SignatureDoc {
 export interface PropItem extends SymbolDoc {
     type: string;
     tags: Record<string, string>;
-    defaultValue: string | null;
+    defaultValue?: string;
     required: boolean;
 }
 
@@ -55,20 +55,19 @@ export class Parser {
             }
 
             return null;
-        } else if (ts.isFunctionExpression(node) && node.name) {
-            const symbol = this.checker.getSymbolAtLocation(node.name);
-
-            if (symbol) {
-                // TODO: fix this
-                return this.serializeFunctionDeclaration(symbol);
-            }
-
-            return null;
         } else if (ts.isClassDeclaration(node) && node.name) {
             const symbol = this.checker.getSymbolAtLocation(node.name);
 
             if (symbol) {
                 return this.serializeClassDeclaration(symbol);
+            }
+
+            return null;
+        } else if (ts.isInterfaceDeclaration(node) && node.name) {
+            const symbol = this.checker.getSymbolAtLocation(node.name);
+
+            if (symbol) {
+                return this.serializeInterfaceDeclaration(symbol);
             }
 
             return null;
@@ -106,6 +105,39 @@ export class Parser {
             ...this.serializeSymbol(symbol),
             tags: this.getTags(symbol),
             props: this.getPropsInfo(props)
+        };
+    };
+
+    serializeInterfaceDeclaration = (symbol: ts.Symbol): ComponentDoc | null => {
+        const members = symbol.members;
+        const props: PropItem[] = [];
+
+        if (members) {
+            members.forEach((member) => {
+                if (!member.valueDeclaration) return;
+
+                const propType = this.checker.getTypeOfSymbolAtLocation(
+                    member,
+                    member.valueDeclaration
+                );
+
+                const propTypeString = this.checker.typeToString(propType);
+                // tslint:disable-next-line:no-bitwise
+                const isOptional = (member.getFlags() & ts.SymbolFlags.Optional) !== 0;
+
+                props.push({
+                    ...this.serializeSymbol(member),
+                    type: propTypeString,
+                    tags: this.getTags(member),
+                    required: !isOptional
+                });
+            });
+        }
+
+        return {
+            ...this.serializeSymbol(symbol),
+            tags: this.getTags(symbol),
+            props
         };
     };
 
@@ -168,7 +200,7 @@ export class Parser {
             const isOptional = (prop.getFlags() & ts.SymbolFlags.Optional) !== 0;
             const tags = this.getTags(prop);
 
-            let defaultValue = null;
+            let defaultValue: any;
 
             // if (defaultProps[propName] !== undefined) {
             //     defaultValue = defaultProps[propName];
