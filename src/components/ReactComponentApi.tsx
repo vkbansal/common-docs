@@ -1,6 +1,6 @@
 import * as React from 'react';
 import glamorous from 'glamorous';
-import { ComponentDoc, PropItem } from '../src/tsReactDocsParser';
+import { ComponentDoc, PropItem } from '../tsReactDocsParser';
 import { Illuminate } from 'react-illuminate';
 
 const Code = glamorous.code({
