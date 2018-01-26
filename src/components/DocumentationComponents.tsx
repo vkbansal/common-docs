@@ -21,8 +21,9 @@ export type StyleOverrides<T = any> = Record<
 >;
 
 function getStyleOverrides<T>(name: string) {
-    return (props: T & ExtraGlamorousProps & { theme: any }, ...rest: any[]) => {
-        const overrides: Styles<T> = (props.theme.commonDocs || {})[name];
+    return (props: T & ExtraGlamorousProps, ...rest: any[]) => {
+        // tslint:disable-next-line:no-unnecessary-type-assertion
+        const overrides: Styles<T> = ((props.theme as any).commonDocs || {})[name];
 
         if (typeof overrides === 'function') {
             return overrides(props, ...rest);

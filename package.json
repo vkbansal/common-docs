@@ -4,8 +4,8 @@
   "description": "\"common components for docs\"",
   "main": "index.js",
   "scripts": {
-    "test": "tslint --project tsconfig.json src/**/*.{ts,tsx} components/**/*.{ts,tsx}",
-    "build": "rm -rf lib && tsc -p tsconfig.json --module commonjs --target ESNext --outDir lib",
+    "lint": "tslint --project tsconfig.json src/**/*.{ts,tsx} components/**/*.{ts,tsx}",
+    "build": "npm run lint && rm -rf lib && tsc -p tsconfig.json --module commonjs --target ESNext --outDir lib",
     "prepublishOnly": "npm test && npm run build"
   },
   "repository": {
