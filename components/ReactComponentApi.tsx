@@ -1,10 +1,9 @@
 import * as React from 'react';
 import glamorous from 'glamorous';
-import { ComponentDoc } from 'react-docgen-typescript/lib';
+import { ComponentDoc, PropItem } from '../src/tsReactDocsParser';
 import { Illuminate } from 'react-illuminate';
 
-const Heading = glamorous.h3({
-    fontWeight: 'bold',
+const Code = glamorous.code({
     color: '#e94949'
 });
 
@@ -18,24 +17,35 @@ export class ReactComponentApi extends React.Component<ReactComponentApiProps> {
         return false;
     }
 
-    renderProps = (key: string, i: number) => {
-        const prop = this.props.api.props[key];
-        const { description } = prop;
-        const [desc, example] = description.split('@example');
+    renderProps = (prop: PropItem, i: number) => {
+        const { description, name, tags } = prop;
+        const { example } = tags;
 
         return (
             <div key={i}>
-                <Heading>
-                    {`props.${key}${prop.required ? '' : '?'}: ${prop.type.name.split(' | ')[0]}`}
-                    {prop.defaultValue && <>{` (default: ${prop.defaultValue.value})`}</>}
-                </Heading>
-                <div dangerouslySetInnerHTML={{ __html: desc }} />
+                <h3>
+                    <Code>
+                        {`props.${name}${prop.required ? '' : '?'}: ${prop.type.split(' | ')[0]}`}
+                        {prop.defaultValue && <>{` (default: ${prop.defaultValue})`}</>}
+                    </Code>
+                </h3>
+                <div dangerouslySetInnerHTML={{ __html: description }} />
                 {example && <Illuminate lang={this.props.lang}>{example.trim()}</Illuminate>}
             </div>
         );
     };
 
     render() {
-        return Object.keys(this.props.api.props).map(this.renderProps);
+        const { api, lang } = this.props;
+
+        return (
+            <div>
+                <h2>
+                    <Code>{`<${api.name} {...props} />`}</Code>
+                </h2>
+                {api.tags.example && <Illuminate lang={lang}>{api.tags.example}</Illuminate>}
+                {api.props.map(this.renderProps)}
+            </div>
+        );
     }
 }

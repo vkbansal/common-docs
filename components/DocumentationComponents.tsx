@@ -149,7 +149,7 @@ export const Container = glamorous.div(
     {
         maxWidth: `${CONTAINER_WIDTH}px`,
         minWidth: '600px',
-        padding: `0 ${CONTAINER_PADDING}px`,
+        padding: `0 ${CONTAINER_PADDING}px 100px ${CONTAINER_PADDING}px`,
         margin: '0 auto',
         '& pre': {
             margin: '8px 0',

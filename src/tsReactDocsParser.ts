@@ -63,14 +63,6 @@ export class Parser {
             }
 
             return null;
-        } else if (ts.isInterfaceDeclaration(node) && node.name) {
-            const symbol = this.checker.getSymbolAtLocation(node.name);
-
-            if (symbol) {
-                return this.serializeInterfaceDeclaration(symbol);
-            }
-
-            return null;
         }
 
         return null;
@@ -105,39 +97,6 @@ export class Parser {
             ...this.serializeSymbol(symbol),
             tags: this.getTags(symbol),
             props: this.getPropsInfo(props)
-        };
-    };
-
-    serializeInterfaceDeclaration = (symbol: ts.Symbol): ComponentDoc | null => {
-        const members = symbol.members;
-        const props: PropItem[] = [];
-
-        if (members) {
-            members.forEach((member) => {
-                if (!member.valueDeclaration) return;
-
-                const propType = this.checker.getTypeOfSymbolAtLocation(
-                    member,
-                    member.valueDeclaration
-                );
-
-                const propTypeString = this.checker.typeToString(propType);
-                // tslint:disable-next-line:no-bitwise
-                const isOptional = (member.getFlags() & ts.SymbolFlags.Optional) !== 0;
-
-                props.push({
-                    ...this.serializeSymbol(member),
-                    type: propTypeString,
-                    tags: this.getTags(member),
-                    required: !isOptional
-                });
-            });
-        }
-
-        return {
-            ...this.serializeSymbol(symbol),
-            tags: this.getTags(symbol),
-            props
         };
     };
 
