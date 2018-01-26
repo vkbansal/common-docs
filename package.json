@@ -6,7 +6,7 @@
   "scripts": {
     "test": "tslint --project tsconfig.json src/**/*.{ts,tsx} components/**/*.{ts,tsx}",
     "build": "rm -rf lib && tsc -p tsconfig.json --module commonjs --target ESNext --outDir lib",
-    "prepublishOnly": "npm test && npm build"
+    "prepublishOnly": "npm test && npm run build"
   },
   "repository": {
     "type": "git",
@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/vkbansal/common-docs#readme",
   "optionalDependencies": {
-    "@types/lodash": "^4.14.95",
+    "@types/lodash": "^4.14.96",
     "@types/markdown-it": "0.0.4",
     "@types/react": "^16.0.34",
     "@types/react-dom": "^16.0.3",
