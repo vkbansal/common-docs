@@ -1,7 +1,7 @@
 import * as React from 'react';
 import glamorous from 'glamorous';
-import { ComponentDoc, PropItem } from '../tsReactDocsParser';
 import { Illuminate } from 'react-illuminate';
+import { ComponentDoc, PropItem } from '../tsReactDocsParser';
 
 const Code = glamorous.code({
     color: '#e94949'
@@ -13,6 +13,9 @@ export interface ReactComponentApiProps {
 }
 
 export class ReactComponentApi extends React.Component<ReactComponentApiProps> {
+    static addLanguage = Illuminate.addLanguage;
+    static deleteLanguage = Illuminate.deleteLanguage;
+
     renderProps = (prop: PropItem, i: number) => {
         const { description, name, tags } = prop;
         const { example } = tags;
