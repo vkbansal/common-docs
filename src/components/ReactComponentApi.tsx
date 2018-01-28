@@ -13,10 +13,6 @@ export interface ReactComponentApiProps {
 }
 
 export class ReactComponentApi extends React.Component<ReactComponentApiProps> {
-    shouldComponentUpdate() {
-        return false;
-    }
-
     renderProps = (prop: PropItem, i: number) => {
         const { description, name, tags } = prop;
         const { example } = tags;
