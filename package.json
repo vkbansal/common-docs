@@ -4,9 +4,11 @@
   "description": "\"common components for docs\"",
   "main": "index.js",
   "scripts": {
+    "test": "npm run lint",
     "lint": "tslint --project tsconfig.json src/**/*.{ts,tsx} components/**/*.{ts,tsx}",
-    "build": "npm run lint && rm -rf lib && tsc -p tsconfig.json --module commonjs --target ESNext --outDir lib",
-    "prepublishOnly": "npm test && npm run build"
+    "build": "rm -rf lib && tsc -p tsconfig.json --module commonjs --target ESNext --outDir lib",
+    "tsnode": "ts-node --compilerOptions '{\"module\":\"commonjs\"}'",
+    "prepublishOnly": "npm run lint && npm run build"
   },
   "repository": {
     "type": "git",
@@ -49,6 +51,7 @@
     "webpack": "^3.10.0"
   },
   "devDependencies": {
+    "byots": "2.8.0-dev.20180127.0.32",
     "prettier": "^1.10.2"
   }
 }

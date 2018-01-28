@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 
 const defaultConfig: ts.CompilerOptions = {
-    module: ts.ModuleKind.ES2015,
+    module: ts.ModuleKind.CommonJS,
     target: ts.ScriptTarget.Latest,
     jsx: ts.JsxEmit.React
 };

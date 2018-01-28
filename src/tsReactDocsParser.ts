@@ -1,7 +1,7 @@
 import * as ts from 'typescript';
 
 const defaultConfig: ts.CompilerOptions = {
-    module: ts.ModuleKind.ES2015,
+    module: ts.ModuleKind.CommonJS,
     target: ts.ScriptTarget.Latest,
     jsx: ts.JsxEmit.React
 };
@@ -28,6 +28,8 @@ export interface ComponentDoc extends SymbolDoc {
     props: PropItem[];
 }
 
+export type SingleOrArray<T> = T | T[];
+
 /** True if this is visible outside this file, false otherwise */
 function isNodeExported(node: ts.Node): boolean {
     return (
@@ -44,7 +46,7 @@ export class Parser {
         this.checker = program.getTypeChecker();
     }
 
-    visit = (node: ts.Node): ComponentDoc | null => {
+    visit = (node: ts.Node): SingleOrArray<ComponentDoc | null> => {
         if (!isNodeExported(node)) return null;
 
         if (ts.isFunctionDeclaration(node) && node.name) {
@@ -63,10 +65,59 @@ export class Parser {
             }
 
             return null;
+        } else if (ts.isVariableStatement(node)) {
+            return node.declarationList.declarations.map((declaration) => {
+                const symbol = this.checker.getSymbolAtLocation(declaration.name);
+
+                if (symbol) {
+                    return this.serializeVariableDeclaration(symbol);
+                }
+
+                return null;
+            });
         }
 
         return null;
     };
+
+    getPropsFromStatelessComponent(type: ts.Type): ts.Symbol | null {
+        const callSignatures = type.getCallSignatures();
+
+        if (callSignatures.length > 0) {
+            for (const sig of callSignatures) {
+                const parameters = sig.getParameters();
+
+                if (parameters.length === 0) {
+                    continue;
+                }
+
+                const propsParam = parameters[0];
+
+                if (propsParam.name === 'props' || parameters.length === 1) {
+                    return propsParam;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    getPropsFromStateFullComponent(type: ts.Type): ts.Symbol | null {
+        const constructSignatures = type.getConstructSignatures();
+
+        if (constructSignatures.length > 0) {
+            for (const sig of constructSignatures) {
+                const instanceType = sig.getReturnType();
+                const props = instanceType.getProperty('props');
+
+                if (props) {
+                    return props;
+                }
+            }
+        }
+
+        return null;
+    }
 
     serializeFunctionDeclaration = (symbol: ts.Symbol): ComponentDoc | null => {
         if (!symbol.valueDeclaration) return null;
@@ -76,20 +127,7 @@ export class Parser {
 
         if (callSignatures.length === 0) return null;
 
-        let props: ts.Symbol | undefined;
-
-        for (const sig of callSignatures) {
-            const parameters = sig.getParameters();
-
-            if (parameters.length === 0) {
-                continue;
-            }
-            const propsParam = parameters[0];
-
-            if (propsParam.name === 'props' || parameters.length === 1) {
-                props = propsParam;
-            }
-        }
+        const props = this.getPropsFromStatelessComponent(type);
 
         if (!props) return null;
 
@@ -108,16 +146,28 @@ export class Parser {
 
         if (constructSignatures.length === 0) return null;
 
-        let props: ts.Symbol | undefined;
+        const props = this.getPropsFromStateFullComponent(type);
 
-        for (const sig of constructSignatures) {
-            const instanceType = sig.getReturnType();
-            props = instanceType.getProperty('props');
+        if (!props) return null;
 
-            if (props) {
-                break;
-            }
-        }
+        const symbolDoc = this.serializeSymbol(symbol);
+
+        return {
+            ...symbolDoc,
+            tags: this.getTags(symbol),
+            props: this.getPropsInfo(props)
+        };
+    };
+
+    serializeVariableDeclaration = (symbol: ts.Symbol): ComponentDoc | null => {
+        const type = this.checker.getTypeOfSymbolAtLocation(
+            symbol,
+            // tslint:disable-next-line:no-non-null-assertion no-unnecessary-type-assertion
+            symbol.valueDeclaration || symbol.declarations![0]
+        );
+
+        const props =
+            this.getPropsFromStatelessComponent(type) || this.getPropsFromStateFullComponent(type);
 
         if (!props) return null;
 
@@ -215,12 +265,19 @@ export function parse(
     let output: ComponentDoc[] = [];
 
     ts.forEachChild(sourceFile, (node) => {
-        const doc = parser.visit(node);
+        let doc = parser.visit(node);
 
-        if (doc) output.push(doc);
+        if (!doc) return;
+
+        if (Array.isArray(doc)) {
+            doc = doc.filter((c) => c);
+            output = [...output, ...(doc as ComponentDoc[])];
+
+            return;
+        }
+
+        output = [...output, doc];
     });
-
-    output = output.filter((c) => c);
 
     return output;
 }
