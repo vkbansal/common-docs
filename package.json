@@ -1,6 +1,6 @@
 {
   "name": "@vkbansal/scripts",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "\"common components for docs\"",
   "main": "index.js",
   "scripts": {
