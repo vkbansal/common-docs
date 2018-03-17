@@ -3,7 +3,7 @@ import { addLanguage, highlight, getLanguage } from 'illuminate-js';
 import { jsx, bash, tsx } from 'illuminate-js/lib/languages';
 import * as _ from 'lodash';
 
-import { parse, ComponentDoc } from './tsReactDocsParser';
+import { parse, ComponentDoc, PropItem } from './tsReactDocsParser';
 
 addLanguage('js', jsx);
 addLanguage('ts', tsx);
@@ -22,7 +22,7 @@ const md = MarkdownIt({
 
 export type ComponentDocMap = Record<string, ComponentDoc>;
 
-export function descriptionDFS(data: ComponentDocMap, borrows: string, name: string): string {
+export function propDFS(data: ComponentDocMap, borrows: string, name: string): Partial<PropItem> {
     const arr = borrows.split(',');
     const n = arr.length;
 
@@ -37,17 +37,17 @@ export function descriptionDFS(data: ComponentDocMap, borrows: string, name: str
         const prop = comp.props.find((p) => p.name === name);
 
         if (prop && prop.description && !('ignore' in prop.tags)) {
-            return prop.description;
+            return prop;
         }
 
         if (comp.tags.borrows) {
-            const description = descriptionDFS(data, comp.tags.borrows, name);
+            const borrowedProp = propDFS(data, comp.tags.borrows, name);
 
-            if (description) return description;
+            if (borrowedProp.description) return borrowedProp;
         }
     }
 
-    return '';
+    return {};
 }
 
 export function reactDocs(files: string[]): ComponentDocMap {
