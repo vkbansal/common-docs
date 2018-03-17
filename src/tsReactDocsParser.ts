@@ -11,10 +11,10 @@ export interface SymbolDoc {
     description: string;
 }
 
-export interface SignatureDoc {
-    parameters: SymbolDoc[];
-    returnType: string;
-}
+// export interface SignatureDoc {
+//     parameters: SymbolDoc[];
+//     returnType: string;
+// }
 
 export interface PropItem extends SymbolDoc {
     type: string;
@@ -24,6 +24,7 @@ export interface PropItem extends SymbolDoc {
 }
 
 export interface ComponentDoc extends SymbolDoc {
+    type: string;
     tags: Record<string, string>;
     props: PropItem[];
 }
@@ -75,6 +76,14 @@ export class Parser {
 
                 return null;
             });
+        } else if (ts.isInterfaceDeclaration(node) && node.name) {
+            const symbol = this.checker.getSymbolAtLocation(node.name);
+
+            if (symbol) {
+                return this.serializeInterfaceDeclaration(symbol);
+            }
+
+            return null;
         }
 
         return null;
@@ -133,6 +142,7 @@ export class Parser {
 
         return {
             ...this.serializeSymbol(symbol),
+            type: 'ReactStatelessComponent',
             tags: this.getTags(symbol),
             props: this.getPropsInfo(props)
         };
@@ -154,6 +164,7 @@ export class Parser {
 
         return {
             ...symbolDoc,
+            type: 'ReactComponent',
             tags: this.getTags(symbol),
             props: this.getPropsInfo(props)
         };
@@ -175,8 +186,52 @@ export class Parser {
 
         return {
             ...symbolDoc,
+            type: 'VariableDeclaration',
             tags: this.getTags(symbol),
             props: this.getPropsInfo(props)
+        };
+    };
+
+    serializeInterfaceDeclaration = (symbol: ts.Symbol): ComponentDoc | null => {
+        const props: PropItem[] = [];
+
+        if (symbol.members) {
+            symbol.members.forEach((member) => {
+                if (!member.valueDeclaration) return;
+
+                const type = this.checker.getTypeOfSymbolAtLocation(
+                    member,
+                    member.valueDeclaration
+                );
+
+                // tslint:disable-next-line:no-bitwise
+                const isOptional = (member.getFlags() & ts.SymbolFlags.Optional) !== 0;
+                const tags = this.getTags(member);
+
+                let defaultValue: any;
+
+                if (tags.default) {
+                    defaultValue = tags.default;
+                    delete tags.default;
+                }
+
+                props.push({
+                    ...this.serializeSymbol(member),
+                    type: this.checker.typeToString(type),
+                    tags,
+                    defaultValue,
+                    required: !isOptional
+                });
+            });
+        }
+
+        const symbolDoc = this.serializeSymbol(symbol);
+
+        return {
+            ...symbolDoc,
+            type: 'Interface',
+            tags: this.getTags(symbol),
+            props
         };
     };
 
@@ -238,14 +293,14 @@ export class Parser {
         };
     };
 
-    serializeSignature = (signature: ts.Signature): SignatureDoc => {
-        const returnType = signature.getReturnType();
+    // serializeSignature = (signature: ts.Signature): SignatureDoc => {
+    //     const returnType = signature.getReturnType();
 
-        return {
-            parameters: signature.parameters.map(this.serializeSymbol),
-            returnType: this.checker.typeToString(returnType)
-        };
-    };
+    //     return {
+    //         parameters: signature.parameters.map(this.serializeSymbol),
+    //         returnType: this.checker.typeToString(returnType)
+    //     };
+    // };
 
     getTags = (symbol: ts.Symbol): Record<string, string> => {
         return symbol
